@@ -1,0 +1,17 @@
+{
+  "name": "mianzhi",
+  "version": "1.0.0",
+  "description": "面值 · 开源的女性化程度与颜值测评（离线、不上传、不留存）",
+  "type": "module",
+  "license": "MIT",
+  "keywords": ["mtf", "feminization", "face", "landmark", "android", "offline"],
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@vladmandic/face-api": "^1.7.15"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

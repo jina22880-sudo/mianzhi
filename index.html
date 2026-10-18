@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>面值</title>
+<style>
+:root{--bg:#0d1116;--ink:#e8eef4;--dim:#8fa0ae;--line:rgba(160,190,210,.18);
+  --green:#5fd08a;--amber:#e8b44a;--red:#e06b6b;--card:rgba(20,28,36,.72);
+  --blue:#a9d8ff;--pink:#ffc9d8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font:15px/1.55 -apple-system,"PingFang SC","Noto Sans CJK SC",system-ui,sans-serif;
+  overscroll-behavior:none;user-select:none}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;border:none;background:none;cursor:pointer}
+.hidden{display:none !important}
+
+header{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 10px) 14px 6px;flex:none}
+header h1{margin:0;font-size:16px;font-weight:600;letter-spacing:.08em}
+header .sp{flex:1}
+.ghost{padding:6px 10px;border-radius:9px;font-size:12px;color:var(--dim);
+  border:1px solid var(--line);background:rgba(255,255,255,.04)}
+
+/* ---------- 首页两栏 ---------- */
+#home{flex:1;display:flex;gap:10px;padding:8px 12px calc(env(safe-area-inset-bottom) + 16px)}
+.card{flex:1;border-radius:20px;padding:18px 14px;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  background:var(--card);border:1px solid var(--line);transition:.16s;position:relative;overflow:hidden}
+.card:active{transform:scale(.97)}
+.card .icon{font-size:34px;line-height:1;margin-bottom:12px}
+.card b{font-size:17px;font-weight:600;letter-spacing:.06em;margin-bottom:8px}
+.card p{margin:0;font-size:11.5px;color:var(--dim);line-height:1.7}
+.card.fem{border-color:rgba(120,180,230,.32);background:linear-gradient(180deg,rgba(40,70,100,.5),rgba(20,28,36,.75))}
+.card.att{border-color:rgba(230,160,190,.3);background:linear-gradient(180deg,rgba(90,45,65,.45),rgba(20,28,36,.75))}
+.card.fem b{color:var(--blue)}
+.card.att b{color:var(--pink)}
+
+/* ---------- 取景 ---------- */
+#stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
+#cam{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#guide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#oval{width:min(74vw,330px);height:min(94vw,420px);border-radius:26px;
+  border:2px dashed rgba(255,255,255,.3);box-shadow:0 0 0 9999px rgba(0,0,0,.22)}
+#hintbar{position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(env(safe-area-inset-bottom) + 132px);
+  padding:9px 18px;border-radius:999px;font-size:13.5px;white-space:nowrap;
+  background:rgba(0,0,0,.66);border:1px solid var(--line);max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#hintbar.ok{color:var(--green);border-color:rgba(95,208,138,.45)}
+#hintbar.bad{color:#cfd8e0;border-color:rgba(160,190,210,.25)}
+#shootbar{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 30px);
+  display:flex;justify-content:center;align-items:center;gap:26px}
+#shoot{width:72px;height:72px;border-radius:50%;background:#fff;
+  border:5px solid rgba(255,255,255,.35);transition:.15s;font-size:0}
+#shoot:active{transform:scale(.94)}
+.roundbtn{width:52px;height:52px;border-radius:50%;font-size:20px;color:#fff;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.28)}
+#backHome{position:absolute;left:14px;top:calc(env(safe-area-inset-top) + 10px);
+  padding:8px 12px;border-radius:10px;font-size:13px;color:#fff;
+  background:rgba(0,0,0,.5);border:1px solid var(--line)}
+
+/* ---------- 结果 ---------- */
+#result{flex:1;overflow:auto;padding:0 14px calc(env(safe-area-inset-bottom) + 24px)}
+.tag{display:inline-block;margin:10px 0 0;padding:4px 10px;border-radius:8px;
+  font-size:11.5px;color:#9fd8b4;background:rgba(80,150,110,.22);border:1px solid rgba(120,200,150,.3)}
+.cover{width:100%;border-radius:14px;margin-top:10px;border:1px solid var(--line)}
+.scores{display:grid;gap:10px;margin:14px 0 8px}
+.scores.one{grid-template-columns:1fr}
+.scores.two{grid-template-columns:1fr 1fr}
+.sc{padding:14px 12px;border-radius:14px;background:var(--card);border:1px solid var(--line);text-align:center}
+.sc .k{font-size:11px;color:var(--dim);letter-spacing:.08em}
+.sc .v{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15;margin-top:2px}
+.sc.fem .v{color:var(--blue)}
+.sc.att .v{color:var(--pink)}
+.sc .u{font-size:11px;color:var(--dim)}
+h2{font-size:13px;color:var(--dim);letter-spacing:.12em;margin:18px 0 8px;font-weight:500}
+.row{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.row:last-child{border-bottom:none}
+.rowhead{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;gap:8px}
+.rowhead b{font-weight:500;white-space:nowrap}
+.rowhead span{color:var(--dim);font-variant-numeric:tabular-nums;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rowfoot{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:5px;gap:8px}
+.rowfoot span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rowfoot em{font-style:normal;opacity:.65;white-space:nowrap}
+.bar{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.09);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;transition:width .5s ease}
+.bar i.lo{background:var(--red)}.bar i.mid{background:var(--amber)}.bar i.hi{background:var(--green)}
+#raw{font-size:12px;color:var(--dim);line-height:1.9;padding:12px;border-radius:12px;
+  background:rgba(255,255,255,.035);border:1px solid var(--line)}
+#raw b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.bigbtn{display:block;width:100%;margin-top:16px;padding:15px;border-radius:13px;
+  font-size:15px;font-weight:600;color:#06120b;background:linear-gradient(180deg,#8fe0b0,#4fa87a)}
+.ghostbtn{display:block;width:100%;margin-top:10px;padding:13px;border-radius:13px;
+  font-size:14px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.note{font-size:11.5px;color:var(--dim);line-height:1.75;margin-top:12px}
+.note b{color:#ffd9a0;font-weight:500}
+
+/* ---------- 遮罩层 ---------- */
+.overlay{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  background:rgba(6,10,13,.9);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:20px}
+.panel{width:min(100%,430px);max-height:86vh;display:flex;flex-direction:column;
+  border-radius:18px;background:rgba(16,23,29,.985);border:1px solid var(--line);overflow:hidden}
+.panel .head{padding:20px 20px 8px;flex:none}
+.panel .head h3{margin:0;font-size:17px;font-weight:600;letter-spacing:.06em}
+.panel .body{padding:0 20px;overflow:auto;flex:1;-webkit-overflow-scrolling:touch}
+.panel .body p{margin:0 0 12px;font-size:13.5px;color:#c6d3dd;line-height:1.85}
+.panel .body p.warn{color:#ffd9a0}
+.panel .body p.dim{color:var(--dim);font-size:12px}
+.panel .body b{color:#e8eef4;font-weight:600}
+.panel .foot{padding:14px 20px 20px;flex:none}
+.scrollhint{text-align:center;font-size:11px;color:var(--dim);padding:6px 0 0;opacity:.8}
+
+/* 性别选择 */
+.gpick{display:flex;gap:12px;padding:4px 20px 20px}
+.gpick button{flex:1;padding:22px 10px;border-radius:16px;background:var(--card);
+  border:1px solid var(--line);text-align:center;transition:.15s}
+.gpick button:active{transform:scale(.97)}
+.gpick b{display:block;font-size:19px;font-weight:600;margin-bottom:6px}
+.gpick span{font-size:11px;color:var(--dim);line-height:1.6}
+.rewardbtn{display:block;width:100%;margin-top:10px;padding:12px;border-radius:12px;
+  font-size:13.5px;color:#ffd9a0;background:rgba(232,180,74,.12);
+  border:1px solid rgba(232,180,74,.35)}
+#reward .panel{max-height:92vh}
+#reward img{width:100%;border-radius:14px;display:block;background:#fff}
+.gpick button[data-g="male"] b{color:#9fc4ff}
+.gpick button[data-g="female"] b{color:#ffb3c8}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>面值</h1>
+    <div class="sp"></div>
+    <button class="ghost" id="why">说明</button>
+  </header>
+
+  <!-- 首页：左右两栏 -->
+  <div id="home">
+    <button class="card fem" id="cardFem">
+      <div class="icon">◐</div>
+      <b>女性化程度</b>
+      <p>测一张脸的<br>女性化几何程度</p>
+    </button>
+    <button class="card att" id="cardAtt">
+      <div class="icon">◇</div>
+      <b>颜值打分</b>
+      <p>按男女各自的<br>审美标准打分</p>
+    </button>
+  </div>
+
+  <!-- 取景 -->
+  <div id="stage" class="hidden">
+    <video id="cam" autoplay playsinline muted></video>
+    <div id="guide"><div id="oval"></div></div>
+    <button id="backHome">返回</button>
+    <div id="hintbar" class="hint">准备中…</div>
+    <div id="shootbar">
+      <button class="roundbtn" id="pickFile" title="从相册选">🖼</button>
+      <button id="shoot">拍</button>
+      <span style="width:52px"></span>
+    </div>
+  </div>
+
+  <!-- 结果 -->
+  <div id="result" class="hidden">
+    <div class="tag" id="modeTag"></div>
+    <canvas id="thumb" class="cover"></canvas>
+    <div id="scores" class="scores"></div>
+
+    <div id="femWrap" class="hidden">
+      <h2>女 性 化 · 分 项</h2>
+      <div id="femList"></div>
+    </div>
+
+    <h2>颜 值 · 分 项</h2>
+    <div id="attList"></div>
+
+    <h2>原 始 测 量</h2>
+    <div id="raw"></div>
+
+    <p class="note">
+      <b>这不是审美判决。</b>分数由测得的几何比例与画面纹理算出，可复现、可解释，但<b>不代表「你多好看」</b>。
+      同一张脸在不同光线、角度下结果会有差异。
+    </p>
+
+    <button class="bigbtn" id="again">再 测 一 张</button>
+    <button class="ghostbtn" id="toHome">回 到 首 页</button>
+  </div>
+</div>
+
+<input type="file" id="file" accept="image/*" style="display:none">
+
+<!-- 公告 -->
+<div class="overlay" id="notice">
+  <div class="panel">
+    <div class="head"><h3>写在前面</h3></div>
+    <div class="body" id="noticeBody">
+      <p>这是一个人人都能用的<b>免费公益工具</b>。不收钱，不放广告，不用注册，不需要联网。</p>
+
+      <p>它做两件事：</p>
+      <p>一、<b>测女性化程度</b>——一张脸在几何上离「女性化」有多近；<br>
+         二、<b>测颜值</b>——按你选的性别，用该性别的审美标准打分。</p>
+
+      <p class="warn">关于分数，我必须先说清楚：</p>
+      <p>这些数字来自相机或图片测到的<b>几何比例与画面纹理</b>。它们可复现、可解释，但它们<b>不是审美判决，也不是医学诊断</b>。同一张脸，换个光线、换个角度，数字就会变。</p>
+      <p><b>它不能定义你，也不该被任何人拿来定义你。</b></p>
+
+      <p>如果你是跨性别者，这个工具是给你自己看的。你可以用它观察变化，也可以用它记录过程。但请记住：<b>任何人拿它来评判你、否定你，都是滥用。</b></p>
+
+      <p class="warn">关于隐私：</p>
+      <p>图片只在这台手机的内存里算一次。不上传，不写入相册，不留缓存。关掉页面，它就消失了。</p>
+
+      <p class="warn">技术依据：</p>
+      <p>颜值分参考 Grammer 等人提出的美貌「八支柱」中可测的四项——<b>对称、比例规整、性别二态、皮肤</b>。性别二态的方向在男女之间相反，所以要先选性别。</p>
+      <p>女性化程度参考面部女性化手术（FFS）文献中记载的男女形态差异，共 <b>7 项几何指标</b>。</p>
+
+      <p class="dim">标定锚点为启发式区间，非经临床验证的量表。仅供自我参考。</p>
+    </div>
+    <div class="foot">
+      <div class="scrollhint">↑ 可以上下滑动阅读 ↑</div>
+      <button class="bigbtn" id="noticeOk">我 知 道 了</button>
+      <button class="rewardbtn" id="rewardOpen">☕ 觉得有用，请我喝杯奶茶</button>
+    </div>
+  </div>
+</div>
+
+<!-- 选性别 -->
+<div class="overlay hidden" id="genderPick">
+  <div class="panel">
+    <div class="head"><h3>你是男是女？</h3></div>
+    <div class="body"><p class="dim">颜值标准在男女之间是反的：男性偏好女性化的面部特征，女性偏好更男性化的面部二态。所以要先选一个。</p></div>
+    <div class="gpick">
+      <button data-g="female"><b>女</b><span>用女性的审美标准</span></button>
+      <button data-g="male"><b>男</b><span>用男性的审美标准</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- 说明 -->
+<div class="overlay hidden" id="about">
+  <div class="panel">
+    <div class="head"><h3>分数依据</h3></div>
+    <div class="body">
+      <p><b>普通颜值</b>：按 Grammer 等人提出的美貌「八支柱」中可测的四项——<b>对称性</b>、<b>比例规整</b>（近似「平均性」）、<b>性别二态</b>、<b>皮肤</b>，另加传统审美的唇鼻黄金比。</p>
+      <p class="warn">「性别二态」的方向在男女间<b>相反</b>，所以颜值打分必须先选性别。</p>
+      <p class="warn">「面宽/面高比（fWHR）」与「下颌角角度」在学术上<b>存在性二态争议</b>，本工具不把它们计入主分，只在原始数据里列参考。</p>
+      <p><b>女性化程度</b>：7 项面部几何加权——眉骨/额头、眼窝/眼型、鼻部、颧骨、下颌角、下巴、唇与人中。方向依据面部女性化手术文献。</p>
+      <p><b>隐私</b>：图片只在本机内存里算一次，不上传、不写入磁盘。退出即销毁。</p>
+    </div>
+    <div class="foot">
+      <button class="bigbtn" id="aboutOk">知道了</button>
+      <button class="rewardbtn" id="rewardOpen2">☕ 请我喝杯奶茶</button>
+    </div>
+  </div>
+</div>
+
+<!-- 赞赏码 -->
+<div class="overlay hidden" id="reward">
+  <div class="panel">
+    <div class="head"><h3>谢谢你</h3></div>
+    <div class="body">
+      <p class="dim">这个工具是免费的，也不会有广告。<br>如果它帮到了你，可以请我喝杯奶茶。</p>
+      <img id="rewardImg" alt="赞赏码">
+      <p class="dim" style="margin-top:10px;text-align:center">用另一台手机扫码 · 或截图后在微信里识别</p>
+    </div>
+    <div class="foot"><button class="bigbtn" id="rewardClose">关 闭</button></div>
+  </div>
+</div>
+
+<script>/*REWARD*/</script>
+<script>/*MODELS*/</script>
+<script>/*PATCH*/</script>
+<script>/*FACEAPI*/</script>
+<script>/*APP*/</script>
+</body>
+</html>
